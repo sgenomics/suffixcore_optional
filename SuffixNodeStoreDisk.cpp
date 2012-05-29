@@ -68,7 +68,6 @@ uint64_t SuffixNodeStoreDisk::push_idx_entry(uint8_t filenum,uint32_t index) {
   fseek(index_filehandle,0,SEEK_END);
   fwrite(data,5,1,index_filehandle);
 
-  cout << "push idx entry at: " << ftell(index_filehandle)/5 << endl;
   return (ftell(index_filehandle)/5)-1;
 }
 
@@ -124,17 +123,17 @@ void SuffixNodeStoreDisk::set(uint32_t idx, SuffixNode &s) {
   write_data(s.get_data(),s.get_data_alloc_size(),idx);
 }
 
-int SuffixNodeStoreDisk::size() {
+uint32_t SuffixNodeStoreDisk::size() {
   fseek(index_filehandle,0,SEEK_END);
   size_t filesize = ftell(index_filehandle);
   return filesize/5;
 }
 
-int SuffixNodeStoreDisk::next_idx(uint32_t i) {
+uint32_t SuffixNodeStoreDisk::next_idx(uint32_t i) {
   return i+1;
 }
 
-int SuffixNodeStoreDisk::last_idx() {
+uint32_t SuffixNodeStoreDisk::last_idx() {
   return size()-1;
 }
 
@@ -145,11 +144,4 @@ void SuffixNodeStoreDisk::force_compact() {
 }
 
 void SuffixNodeStoreDisk::compact() {
-}
-
-template<class store_type>
-void copy(store_type &other) {
-  for(uint32_t n=0;n<other.size();n++) {
-    push_back(other.get(n));
-  }
 }

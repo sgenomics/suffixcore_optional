@@ -37,14 +37,20 @@ public:
   size_t push_back(SuffixNode &s,int resize=-1);
   SuffixNode get(uint32_t idx);
   void set(uint32_t idx, SuffixNode &s);
-  int  size();
-  int  next_idx(int i);
-  int  last_idx();
+  uint32_t  size();
+  uint32_t  next_idx(uint32_t i);
+  uint32_t  last_idx();
   void stats();
   void force_compact();
   void compact();
 
-  template<class store_type> void copy(store_type &other);
+  template<class copying_type>
+  void copy(copying_type &other) {
+    for(uint32_t n=0;n<other.size();n++) {
+      push_back(other.get(n));
+    }
+  }
+
   uint64_t push_idx_entry(uint8_t filenum,uint32_t index);
   void     get_idx_entry(uint32_t idx,uint8_t &filenum,uint32_t &index);
   void    *read_data(uint8_t filenum,uint32_t index);
