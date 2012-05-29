@@ -20,6 +20,7 @@
 #include <map>
 #include <algorithm>
 #include "tialloc.h"
+#include <stdio.h>
 
 class SuffixNode;
 
@@ -63,6 +64,7 @@ public:
   vector<FILE *> data_filehandle;
   FILE *index_filehandle;
 
+  string basefilename;
 };
 
 

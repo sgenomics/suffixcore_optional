@@ -27,18 +27,19 @@ using namespace std;
 #include "SuffixNode.h"
 #include <stdint.h>
 
-SuffixNodeStoreDisk::SuffixNodeStoreDisk(string filename) {
+SuffixNodeStoreDisk::SuffixNodeStoreDisk(string filename) : basefilename(filename) {
  
   // open index file handle
   index_filehandle = fopen((filename + "/index").c_str(),"a+");
 
   // open datafile, file handles
-  data_filehandle = vector<FILE *>(100000,0);
+  data_filehandle = vector<FILE *>(100000,(FILE *) 0);
 }
 
 FILE *SuffixNodeStoreDisk::get_data_filehandle(uint32_t i) {
   if(data_filehandle[i] == 0) {
-    data_filehandle[i] = fopen((filename + "/" + stringify(i)).c_str(),"a+");
+    data_filehandle[i] = fopen((basefilename + "/" + stringify(i)).c_str(),"a+");
+    return data_filehandle[i];
   } else {
     return data_filehandle[i];
   }
@@ -59,16 +60,17 @@ size_t SuffixNodeStoreDisk::push_back_end() {
 
 size_t SuffixNodeStoreDisk::push_back(SuffixNode &s,int resize) {
 
-  uint16_t  filenum = s.get_data_alloc_size();
+  uint16_t filenum = s.get_data_alloc_size();
   uint32_t index   = push_data(filenum,s.get_data());
 
   return push_idx_entry(filenum,index);
 }
 
 uint64_t SuffixNodeStoreDisk::push_idx_entry(uint16_t filenum,uint32_t index) {
-  char data[6];
+
+  uint8_t data[6];
   *((uint32_t *) data)   = index;
-  *((uint16_t *) data+4) = filenum;
+  *((uint16_t *) (data+4)) = filenum;
  
   fseek(index_filehandle,0,SEEK_END);
   fwrite(data,6,1,index_filehandle);
@@ -80,8 +82,6 @@ uint64_t SuffixNodeStoreDisk::push_idx_entry(uint16_t filenum,uint32_t index) {
 void SuffixNodeStoreDisk::get_idx_entry(uint32_t idx,uint16_t &filenum,uint32_t &index) {
 
   char data[6];
-
-
   fseek(index_filehandle,idx*6,SEEK_SET);
   fread(data,6,1,index_filehandle);
 
