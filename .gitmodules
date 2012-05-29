@@ -1,0 +1,3 @@
+[submodule "test/suffixcore"]
+	path = test/suffixcore
+	url = git@github.com:sgenomics/suffixcore.git

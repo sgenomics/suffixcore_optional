@@ -13,10 +13,9 @@
  * Can modify source-code but cannot distribute modifications (derivative works).
  */
 
-#ifndef SUFFIXNODESTOREMEMVEC
-#define SUFFIXNODESTOREMEMVEC
+#ifndef SUFFIXNODESTOREDISK
+#define SUFFIXNODESTOREDISK
 
-#include "global_defs.h"
 #include <vector>
 #include <map>
 #include <algorithm>
@@ -31,21 +30,26 @@ using namespace std;
 class SuffixNodeStoreDisk {
 
 public:
-  SuffixNodeStoreDisk(string filename,bool load);
+  SuffixNodeStoreDisk(string filename);
   void set_compactmode(bool compact_mode);
   size_t push_back_norm();
   size_t push_back_end();
   size_t push_back(SuffixNode &s,int resize=-1);
-  SuffixNode &get(int idx);
-  void set(int idx, SuffixNode &s);
-  int size();
-  int next_idx(int i);
-  int last_idx();
+  SuffixNode get(uint32_t idx);
+  void set(uint32_t idx, SuffixNode &s);
+  int  size();
+  int  next_idx(int i);
+  int  last_idx();
   void stats();
   void force_compact();
   void compact();
 
   template<class store_type> void copy(store_type &other);
+  uint64_t push_idx_entry(uint8_t filenum,uint32_t index);
+  void     get_idx_entry(uint32_t idx,uint8_t &filenum,uint32_t &index);
+  void    *read_data(uint8_t filenum,uint32_t index);
+  void     write_data(void *data,uint8_t filenum,uint32_t index);
+  uint32_t push_data(uint8_t filenum, void *data);
 
   vector<FILE *> data_filehandle;
   FILE *index_filehandle;
