@@ -66,28 +66,27 @@ size_t SuffixNodeStoreDisk::push_back(SuffixNode &s,int resize) {
 }
 
 uint64_t SuffixNodeStoreDisk::push_idx_entry(uint16_t filenum,uint32_t index) {
-  char data[5];
-  *((uint32_t *) data) = index;
-  data[4] = filenum;
+  char data[6];
+  *((uint32_t *) data)   = index;
+  *((uint16_t *) data+4) = filenum;
  
   fseek(index_filehandle,0,SEEK_END);
-  fwrite(data,5,1,index_filehandle);
+  fwrite(data,6,1,index_filehandle);
 
-  return (ftell(index_filehandle)/5)-1;
+  return (ftell(index_filehandle)/6)-1;
 }
 
 
 void SuffixNodeStoreDisk::get_idx_entry(uint32_t idx,uint16_t &filenum,uint32_t &index) {
 
-  char data[5];
+  char data[6];
 
 
-  fseek(index_filehandle,idx*5,SEEK_SET);
-  fread(data,5,1,index_filehandle);
-
+  fseek(index_filehandle,idx*6,SEEK_SET);
+  fread(data,6,1,index_filehandle);
 
   index   = *((uint32_t *) data);
-  filenum = (uint16_t)  data[4];
+  filenum = *((uint16_t *)  (data+4));
 }
 
 SuffixNode SuffixNodeStoreDisk::get(uint32_t idx) {
@@ -131,7 +130,7 @@ void SuffixNodeStoreDisk::set(uint32_t idx, SuffixNode &s) {
 uint32_t SuffixNodeStoreDisk::size() {
   fseek(index_filehandle,0,SEEK_END);
   size_t filesize = ftell(index_filehandle);
-  return filesize/5;
+  return filesize/6;
 }
 
 uint32_t SuffixNodeStoreDisk::next_idx(uint32_t i) {
