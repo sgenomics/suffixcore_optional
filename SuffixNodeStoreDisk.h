@@ -54,11 +54,11 @@ public:
     }
   }
 
-  uint64_t push_idx_entry(uint8_t filenum,uint32_t index);
-  void     get_idx_entry(uint32_t idx,uint8_t &filenum,uint32_t &index);
-  void    *read_data(uint8_t filenum,uint32_t index);
-  void     write_data(void *data,uint8_t filenum,uint32_t index);
-  uint32_t push_data(uint8_t filenum, void *data);
+  uint64_t push_idx_entry(uint16_t filenum,uint32_t index);
+  void     get_idx_entry(uint32_t idx,uint16_t &filenum,uint32_t &index);
+  void    *read_data(uint16_t filenum,uint32_t index);
+  void     write_data(void *data,uint16_t filenum,uint32_t index);
+  uint32_t push_data(uint16_t filenum, void *data);
 
   vector<FILE *> data_filehandle;
   FILE *index_filehandle;
