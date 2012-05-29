@@ -13,8 +13,8 @@
  * Can modify source-code but cannot distribute modifications (derivative works).
  */
 
-#ifndef SUFFIXNODESTOREMEMVEC
-#define SUFFIXNODESTOREMEMVEC
+#ifndef SUFFIXNODESTOREDISK
+#define SUFFIXNODESTOREDISK
 
 #include "global_defs.h"
 #include <vector>
@@ -31,7 +31,7 @@ using namespace std;
 class SuffixNodeStoreDisk {
 
 public:
-  SuffixNodeStoreDisk(string filename,bool load);
+  SuffixNodeStoreDisk(string filename);
   void set_compactmode(bool compact_mode);
   size_t push_back_norm();
   size_t push_back_end();

@@ -20,13 +20,14 @@
 #include "tialloc.h"
 #include "SuffixNodeStoreDisk.h"
 #include "SuffixNode.h"
+#include "stringify.h"
 
 using namespace std;
 
 #include "SuffixNode.h"
 #include <stdint.h>
 
-SuffixNodeStoreDisk::SuffixNodeStoreDisk(string filename,bool load) {
+SuffixNodeStoreDisk::SuffixNodeStoreDisk(string filename) {
  
   // open index file handle
   index_filehandle = fopen((filename + "/index").c_str(),"a+");
@@ -34,7 +35,7 @@ SuffixNodeStoreDisk::SuffixNodeStoreDisk(string filename,bool load) {
   // open datafile, file handles
   data_filehandle = vector<FILE *>(256);
   for(size_t n=1;n<256;n++) {
-    data_filehandle[n] = fopen((filename + "/" + stringify(n)),"a+");
+    data_filehandle[n] = fopen((filename + "/" + stringify(n)).c_str(),"a+");
   }
 }
 
@@ -53,8 +54,8 @@ size_t SuffixNodeStoreDisk::push_back_end() {
 
 size_t SuffixNodeStoreDisk::push_back(SuffixNode &s,int resize) {
 
-  filenum = s.get_alloc_size();
-  index   = push_data(filenum,s.data);
+  uint8_t  filenum = s.get_data_alloc_size();
+  uint32_t index   = push_data(filenum,s.data);
 
   return push_idx_entry(filenum,index);
 }

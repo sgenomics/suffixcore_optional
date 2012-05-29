@@ -13,6 +13,8 @@ void test_suffixnodestoredisk(UnitTest &utf) {
 
   utf.begin_test_set("SuffixNodeStoreDisk tests");
 
+  SuffixNodeStoreDisk store("./test_store");
+
   SuffixNode s;
   s.set_child(1,5);
   s.set_child(2,5);
