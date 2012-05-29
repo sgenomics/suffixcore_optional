@@ -3,7 +3,8 @@
 #include <vector>
 #include <stdlib.h>
 #include "UnitTest.h"
-#include "../global_defs.h"
+#include "global_defs.h"
+#include "../SuffixNodeStoreDisk.h"
 #include "test_suffixnodestoredisk.h"
 
 using namespace std;
