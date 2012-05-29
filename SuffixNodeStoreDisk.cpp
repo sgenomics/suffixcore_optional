@@ -123,7 +123,7 @@ int SuffixNodeStoreDisk::size() {
   return filesize/5;
 }
 
-int SuffixNodeStoreDisk::next_idx(int i) {
+int SuffixNodeStoreDisk::next_idx(uint32_t i) {
   return i+1;
 }
 
@@ -138,4 +138,11 @@ void SuffixNodeStoreDisk::force_compact() {
 }
 
 void SuffixNodeStoreDisk::compact() {
+}
+
+template<class store_type>
+void copy(store_type &other) {
+  for(uint32_t n=0;n<other.size();n++) {
+    push_back(other.get(n));
+  }
 }

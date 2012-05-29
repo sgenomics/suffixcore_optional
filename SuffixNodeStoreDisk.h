@@ -45,6 +45,8 @@ public:
   void force_compact();
   void compact();
 
+  template<class store_type> void copy(store_type &other);
+
   vector<FILE *> data_filehandle;
   FILE *index_filehandle;
 
