@@ -33,9 +33,14 @@ SuffixNodeStoreDisk::SuffixNodeStoreDisk(string filename) {
   index_filehandle = fopen((filename + "/index").c_str(),"a+");
 
   // open datafile, file handles
-  data_filehandle = vector<FILE *>(256);
-  for(size_t n=1;n<256;n++) {
-    data_filehandle[n] = fopen((filename + "/" + stringify(n)).c_str(),"a+");
+  data_filehandle = vector<FILE *>(100000,0);
+}
+
+FILE *SuffixNodeStoreDisk::get_data_filehandle(uint32_t i) {
+  if(data_filehandle[i] == 0) {
+    data_filehandle[i] = fopen((filename + "/" + stringify(i)).c_str(),"a+");
+  } else {
+    return data_filehandle[i];
   }
 }
 
@@ -54,13 +59,13 @@ size_t SuffixNodeStoreDisk::push_back_end() {
 
 size_t SuffixNodeStoreDisk::push_back(SuffixNode &s,int resize) {
 
-  uint8_t  filenum = s.get_data_alloc_size();
+  uint16_t  filenum = s.get_data_alloc_size();
   uint32_t index   = push_data(filenum,s.get_data());
 
   return push_idx_entry(filenum,index);
 }
 
-uint64_t SuffixNodeStoreDisk::push_idx_entry(uint8_t filenum,uint32_t index) {
+uint64_t SuffixNodeStoreDisk::push_idx_entry(uint16_t filenum,uint32_t index) {
   char data[5];
   *((uint32_t *) data) = index;
   data[4] = filenum;
@@ -72,7 +77,7 @@ uint64_t SuffixNodeStoreDisk::push_idx_entry(uint8_t filenum,uint32_t index) {
 }
 
 
-void SuffixNodeStoreDisk::get_idx_entry(uint32_t idx,uint8_t &filenum,uint32_t &index) {
+void SuffixNodeStoreDisk::get_idx_entry(uint32_t idx,uint16_t &filenum,uint32_t &index) {
 
   char data[5];
 
@@ -82,12 +87,12 @@ void SuffixNodeStoreDisk::get_idx_entry(uint32_t idx,uint8_t &filenum,uint32_t &
 
 
   index   = *((uint32_t *) data);
-  filenum = (uint8_t)  data[4];
+  filenum = (uint16_t)  data[4];
 }
 
 SuffixNode SuffixNodeStoreDisk::get(uint32_t idx) {
 
-  uint8_t  filenum;
+  uint16_t  filenum;
   uint32_t index;
   get_idx_entry(idx,filenum,index);
 
@@ -98,25 +103,25 @@ SuffixNode SuffixNodeStoreDisk::get(uint32_t idx) {
   return node;
 }
 
-void *SuffixNodeStoreDisk::read_data(uint8_t filenum,uint32_t index) {
+void *SuffixNodeStoreDisk::read_data(uint16_t filenum,uint32_t index) {
 
   void *data = tialloc::instance()->alloc(filenum);
 
-  fseek(data_filehandle[filenum],index*filenum,SEEK_SET);
-  fread(data,filenum,1,data_filehandle[filenum]);
+  fseek(get_data_filehandle(filenum),index*filenum,SEEK_SET);
+  fread(data,filenum,1,get_data_filehandle(filenum));
   return data;
 }
 
-void SuffixNodeStoreDisk::write_data(void *data,uint8_t filenum,uint32_t index) {
-  fseek(data_filehandle[filenum],index*filenum,SEEK_SET);
-  fwrite(data,filenum,1,data_filehandle[filenum]);
+void SuffixNodeStoreDisk::write_data(void *data,uint16_t filenum,uint32_t index) {
+  fseek(get_data_filehandle(filenum),index*filenum,SEEK_SET);
+  fwrite(data,filenum,1,get_data_filehandle(filenum));
 }
 
-uint32_t SuffixNodeStoreDisk::push_data(uint8_t filenum, void *data) {
-  fseek(data_filehandle[filenum],0,SEEK_END);
-  fwrite(data,filenum,1,data_filehandle[filenum]);
+uint32_t SuffixNodeStoreDisk::push_data(uint16_t filenum, void *data) {
+  fseek(get_data_filehandle(filenum),0,SEEK_END);
+  fwrite(data,filenum,1,get_data_filehandle(filenum));
 
-  return (ftell(data_filehandle[filenum])-filenum)/filenum;
+  return (ftell(get_data_filehandle(filenum))-filenum)/filenum;
 }
 
 void SuffixNodeStoreDisk::set(uint32_t idx, SuffixNode &s) {

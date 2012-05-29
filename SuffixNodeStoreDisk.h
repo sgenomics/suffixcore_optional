@@ -44,6 +44,9 @@ public:
   void force_compact();
   void compact();
 
+  FILE *get_data_filehandle(uint32_t i);
+
+
   template<class copying_type>
   void copy(copying_type &other) {
     for(uint32_t n=0;n<other.size();n++) {
