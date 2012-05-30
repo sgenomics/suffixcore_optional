@@ -13,18 +13,26 @@ void test_transcodingdiskvector(UnitTest &utf) {
   TranscodingDiskVector testtdv("./testdv");
  
   uint16_t testv;
+  uint8_t testv0;
+  uint8_t testv1;
 
   testv = testtdv[0];
-  utf.test_equality((int)((char *)&(testv))[0],(int)10);
-  utf.test_equality((int)((char *)&(testv))[1],(int)15);
+  testv0 = testv >> 8;
+  testv1 = (uint8_t) testv;
+  utf.test_equality((int)testv0,(int)10);
+  utf.test_equality((int)testv1,(int)15);
 
   testv = testtdv[1];
-  utf.test_equality((int)((char *)&(testv))[0],(int)10);
-  utf.test_equality((int)((char *)&(testv))[1],(int)15);
+  testv0 = testv >> 8;
+  testv1 = (uint8_t) testv;
+  utf.test_equality((int)testv0,(int)10);
+  utf.test_equality((int)testv1,(int)15);
 
   testv = testtdv[2];
-  utf.test_equality((int)((char *)&(testv))[0],(int)11);
-  utf.test_equality((int)((char *)&(testv))[1],(int)1);
+  testv0 = testv >> 8;
+  testv1 = (uint8_t) testv;
+  utf.test_equality((int)testv0,(int)11);
+  utf.test_equality((int)testv1,(int)1);
 
   utf.end_test_set();
 }
