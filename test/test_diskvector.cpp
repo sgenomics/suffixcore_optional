@@ -18,6 +18,7 @@ void test_diskvector(UnitTest &utf) {
   utf.test_equality((int)testdv[3],(int) 15);
   utf.test_equality((int)testdv[4],(int) 11);
   utf.test_equality((int)testdv[5],(int)  1);
+  utf.test_equality(testdv.size(),6);
  
   utf.end_test_set();
 }

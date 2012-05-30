@@ -26,5 +26,7 @@ void test_transcodingdiskvector(UnitTest &utf) {
   utf.test_equality((int)((char *)&(testv))[0],(int)11);
   utf.test_equality((int)((char *)&(testv))[1],(int)1);
 
+  utf.test_equality(testtdv.size(),3);
+
   utf.end_test_set();
 }
