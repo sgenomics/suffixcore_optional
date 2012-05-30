@@ -34,7 +34,11 @@ void test_transcodingdiskvector(UnitTest &utf) {
   utf.test_equality((int)testv0,(int)11);
   utf.test_equality((int)testv1,(int)1);
 
-  utf.test_equality(testtdv.size(),3);
+  utf.test_equality(testtdv.size(),(size_t)3);
+
+  // size 5 file
+  TranscodingDiskVector testtdv2("./testdv2");
+  utf.test_equality(testtdv2.size(),(size_t)2);
 
   utf.end_test_set();
 }
