@@ -33,10 +33,17 @@ public:
 
   uint16_t operator[](uint64_t index) {
 
-    uint16_t data;
+    uint16_t data1=0;
+    uint16_t data2=0;
 
     fseek(filehandle,index*sizeof(uint16_t),SEEK_SET);
-    fread(&data,sizeof(uint16_t),1,filehandle);
+    fread(&data1,sizeof(uint8_t),1,filehandle);
+    fread(&data2,sizeof(uint8_t),1,filehandle);
+  
+    uint16_t data;
+    data = data1 << 8;
+    data += data2;
+
     return data;
   }
 

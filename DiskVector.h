@@ -45,7 +45,7 @@ public:
   size_t size() {
     fseek(filehandle,0,SEEK_END);
     size_t filesize = ftell(filehandle);
-    return filesize/sizeof(uint16_t);
+    return filesize/sizeof(data_type);
   }
 
   FILE *filehandle;
