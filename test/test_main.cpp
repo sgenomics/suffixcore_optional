@@ -7,6 +7,7 @@
 #include "../SuffixNodeStoreDisk.h"
 #include "test_suffixnodestoredisk.h"
 #include "test_diskvector.h"
+#include "test_transcodingdiskvector.h"
 
 using namespace std;
 
@@ -15,5 +16,6 @@ int main(int argc,char ** argv) {
 
   test_suffixnodestoredisk(utf);
   test_diskvector(utf);
+  test_transcodingdiskvector(utf);
   utf.test_report();
 }
