@@ -31,6 +31,7 @@ using namespace std;
 class SuffixNodeStoreDisk {
 
 public:
+  SuffixNodeStoreDisk() {}
   SuffixNodeStoreDisk(string filename);
   void set_compactmode(bool compact_mode);
   size_t push_back_norm();

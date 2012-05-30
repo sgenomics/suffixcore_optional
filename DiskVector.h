@@ -24,6 +24,8 @@ template<class data_type>
 class DiskVector {
 
 public:
+  DiskVector() {}
+
   DiskVector(string filename) {
     filehandle = fopen(filename.c_str(),"r");
   }
@@ -32,9 +34,17 @@ public:
 
     data_type data;
 
-    fseek(filehandle,index*size_of(data_type),SEEK_SET);
-    fread(&data,size_of(data_type),1,filehandle);
+    fseek(filehandle,index*sizeof(data_type),SEEK_SET);
+    fread(&data,sizeof(data_type),1,filehandle);
     return data;
+  }
+
+  void push_back(uint16_t i) {}
+
+  size_t size() {
+    fseek(filehandle,0,SEEK_END);
+    size_t filesize = ftell(filehandle);
+    return filesize/sizeof(uint16_t);
   }
 
   FILE *filehandle;

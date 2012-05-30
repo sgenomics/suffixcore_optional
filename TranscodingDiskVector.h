@@ -23,6 +23,9 @@ using namespace std;
 class TranscodingDiskVector {
 
 public:
+
+  TranscodingDiskVector() {}
+
   TranscodingDiskVector(string filename) {
     filehandle = fopen(filename.c_str(),"r");
   }
@@ -31,9 +34,17 @@ public:
 
     uint16_t data;
 
-    fseek(filehandle,index*size_of(uint16_t),SEEK_SET);
-    fread(&data,size_of(uint16_t),1,filehandle);
+    fseek(filehandle,index*sizeof(uint16_t),SEEK_SET);
+    fread(&data,sizeof(uint16_t),1,filehandle);
     return data;
+  }
+
+  void push_back(uint16_t i) {}
+
+  size_t size() {
+    fseek(filehandle,0,SEEK_END);
+    size_t filesize = ftell(filehandle);
+    return filesize/sizeof(uint16_t);
   }
 
   FILE *filehandle;
