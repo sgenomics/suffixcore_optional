@@ -15,6 +15,10 @@ void test_suffixnodestoredisk(UnitTest &utf) {
 
   SuffixNodeStoreDisk store("./test_store");
 
+  SuffixNode::store = &store;
+  SuffixNode::end_marker_value = 50;
+
+
   SuffixNode s1;
   s1.set_child(1,5);
   s1.set_child(2,5);
@@ -28,7 +32,9 @@ void test_suffixnodestoredisk(UnitTest &utf) {
   s2.set_child(2,3);
   s2.set_child(3,4);
   s2.set_child(7,5);
-  s2.set_depth(100);
+  s2.set_depth(10);
+  s2.set_label_start(10);
+  s2.set_label_end(20);
   uint32_t idx2 = store.push_back(s2);
 
   SuffixNode scheck;
@@ -52,7 +58,8 @@ void test_suffixnodestoredisk(UnitTest &utf) {
 
   SuffixNode s3;
   s3.set_parent(idx2);
-  utf.test_equality(s3.get_depth(),100);
+  s3.set_label_start(0);
+  utf.test_equality(s3.get_depth_raw(),10);
 
   utf.end_test_set();
 }
