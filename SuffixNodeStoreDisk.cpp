@@ -90,7 +90,6 @@ void SuffixNodeStoreDisk::get_idx_entry(uint32_t idx,uint16_t &filenum,uint32_t 
 }
 
 SuffixNode SuffixNodeStoreDisk::get(uint32_t idx) {
-  cout << "getting: " << idx << endl;
   uint16_t filenum;
   uint32_t index;
   get_idx_entry(idx,filenum,index);
