@@ -37,9 +37,9 @@ void test_suffixnodestoredisk(UnitTest &utf) {
   s2.set_label_end(20);
   uint32_t idx2 = store.push_back(s2);
 
-  SuffixNode s3;
-  s2.set_label_start(10);
-  uint32_t idx3 = store.push_back(s3);
+  SuffixNode s4;
+  s4.set_label_start(10);
+  uint32_t idx4 = store.push_back(s4);
 
   SuffixNode scheck;
 
@@ -59,7 +59,7 @@ void test_suffixnodestoredisk(UnitTest &utf) {
   utf.test_equality(scheck.get_child(7),5);
   utf.test_equality(scheck.get_child(50),-1);
  
-  scheck = store.get(idx3); 
+  scheck = store.get(idx4); 
   utf.test_equality(scheck.child_count(),0);
 
   SuffixNode s3;
