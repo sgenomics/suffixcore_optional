@@ -25,6 +25,13 @@ void test_suffixnodestoredisk(UnitTest &utf) {
   }
   uint32_t idx5 = store.push_back(s5);
 
+  SuffixNode s6;
+  for(size_t n=0;n<1000;n++) {
+    cout << "n: " << n << endl;
+    s6.set_child(n,n);
+  }
+  uint32_t idx6 = store.push_back(s6);
+
 
   SuffixNode s1;
   s1.set_child(1,5);
@@ -46,13 +53,6 @@ void test_suffixnodestoredisk(UnitTest &utf) {
 
   SuffixNode s4;
   s4.set_label_start(10);
-  uint32_t idx4 = store.push_back(s4);
-
-
-  SuffixNode s4;
-  for(size_t n=0;n<1000;n++) {
-    s4.set_child(n,n);
-  }
   uint32_t idx4 = store.push_back(s4);
 
   SuffixNode scheck;
@@ -79,13 +79,33 @@ void test_suffixnodestoredisk(UnitTest &utf) {
   scheck = store.get(idx5);
   utf.test_equality(scheck.child_count(),1000);
 
+  scheck = store.get(idx6);
+  utf.test_equality(scheck.child_count(),1000);
+
   SuffixNode s3;
   s3.set_parent(idx2);
   s3.set_label_start(0);
   utf.test_equality(s3.get_depth_raw(),10);
 
-  scheck = store.get(idx4);
-  utf.test_equality(scheck.child_count(),1000);
+  vector<size_t> sizes;
+  vector<size_t> idxs;
+  // random tests
+  for(size_t i=0;i<500;i++) {
+    SuffixNode srand;
+    int rsize = rand()%500;
+    for(size_t n=0;n<rsize;n++) {
+      cout << "n: " << n << endl;
+      srand.set_child(n,rand());
+    }
+    uint32_t idxr = store.push_back(srand);
+    sizes.push_back(rsize);
+    idxs.push_back(idxr);
+  }
+
+  for(size_t i=0;i<500;i++) {
+    scheck = store.get(idxs[i]);
+    utf.test_equality(scheck.child_count(),(int32_t) sizes[i]);
+  }
 
   utf.end_test_set();
 }
