@@ -17,6 +17,13 @@ void test_suffixnodestoredisk(UnitTest &utf) {
 
   SuffixNode::store = &store;
   SuffixNode::end_marker_value = 50;
+  
+  SuffixNode s5;
+  for(size_t n=0;n<1000;n++) {
+    cout << "n: " << n << endl;
+    s5.set_child(n,n);
+  }
+  uint32_t idx5 = store.push_back(s5);
 
 
   SuffixNode s1;
@@ -41,11 +48,6 @@ void test_suffixnodestoredisk(UnitTest &utf) {
   s4.set_label_start(10);
   uint32_t idx4 = store.push_back(s4);
 
-  SuffixNode s5;
-  for(size_t n=0;n<1000;n++) {
-    s5.set_child(n,n);
-  }
-  uint32_t idx5 = store.push_back(s5);
 
   SuffixNode scheck;
 
@@ -78,5 +80,3 @@ void test_suffixnodestoredisk(UnitTest &utf) {
 
   utf.end_test_set();
 }
-
-
