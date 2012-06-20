@@ -63,7 +63,9 @@ size_t SuffixNodeStoreDisk::push_back(SuffixNode &s,int resize) {
   uint16_t filenum = s.get_data_alloc_size();
   uint32_t index   = push_data(filenum,s.get_data());
 
-  return push_idx_entry(filenum,index);
+  size_t idx = push_idx_entry(filenum,index);
+
+  return idx;
 }
 
 uint64_t SuffixNodeStoreDisk::push_idx_entry(uint16_t filenum,uint32_t index) {

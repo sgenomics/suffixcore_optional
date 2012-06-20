@@ -16,22 +16,23 @@
 #ifndef GLOBALDEFS
 #define GLOBALDEFS
 
+#define index_type uint32_t
+#define invalid_idx 4294967295
+
 #define suffixnodestore_type SuffixNodeStoreDisk
 
-//define one of these to delect a storage mode
-#define object_store_type ObjectStoreMemVec
-
 //define one of these to select a memory allocator
-//#define use_malloc 1
 #define use_tialloc 1
 
 #define alphabet_size  65534
 #define symbol_type uint16_t
 #define symbol_size  65534
-#define final_symbol 65533
+#define final_symbol 65535
+#define suffixnode_t SuffixNode
+#define searchtrans_store_type vector<uint8_t>
+
 
 #define store_type vector<symbol_type>
-
 #include "SuffixNodeStoreDisk.h"
 
 #endif

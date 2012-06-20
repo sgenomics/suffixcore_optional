@@ -20,14 +20,12 @@ void test_suffixnodestoredisk(UnitTest &utf) {
   
   SuffixNode s5;
   for(size_t n=0;n<1000;n++) {
-    cout << "n: " << n << endl;
     s5.set_child(n,n);
   }
   uint32_t idx5 = store.push_back(s5);
 
   SuffixNode s6;
   for(size_t n=0;n<1000;n++) {
-    cout << "n: " << n << endl;
     s6.set_child(n,n);
   }
   uint32_t idx6 = store.push_back(s6);
@@ -59,19 +57,19 @@ void test_suffixnodestoredisk(UnitTest &utf) {
 
   scheck = store.get(idx1);
   utf.test_equality(scheck.child_count(),4);
-  utf.test_equality(scheck.get_child(1),8);
-  utf.test_equality(scheck.get_child(2),5);
-  utf.test_equality(scheck.get_child(3),4);
-  utf.test_equality(scheck.get_child(7),6);
-  utf.test_equality(scheck.get_child(5),-1);
+  utf.test_equality(scheck.get_child(1),(index_type)8);
+  utf.test_equality(scheck.get_child(2),(index_type)5);
+  utf.test_equality(scheck.get_child(3),(index_type)4);
+  utf.test_equality(scheck.get_child(7),(index_type)6);
+  utf.test_equality(scheck.get_child(5),(index_type)invalid_idx);
 
   scheck = store.get(idx2);
   utf.test_equality(scheck.child_count(),4);
-  utf.test_equality(scheck.get_child(1),2);
-  utf.test_equality(scheck.get_child(2),3);
-  utf.test_equality(scheck.get_child(3),4);
-  utf.test_equality(scheck.get_child(7),5);
-  utf.test_equality(scheck.get_child(50),-1);
+  utf.test_equality(scheck.get_child(1),(index_type)2);
+  utf.test_equality(scheck.get_child(2),(index_type)3);
+  utf.test_equality(scheck.get_child(3),(index_type)4);
+  utf.test_equality(scheck.get_child(7),(index_type)5);
+  utf.test_equality(scheck.get_child(50),(index_type)invalid_idx);
  
   scheck = store.get(idx4); 
   utf.test_equality(scheck.child_count(),0);
@@ -85,7 +83,7 @@ void test_suffixnodestoredisk(UnitTest &utf) {
   SuffixNode s3;
   s3.set_parent(idx2);
   s3.set_label_start(0);
-  utf.test_equality(s3.get_depth_raw(),10);
+  utf.test_equality(s3.get_depth_raw(),(index_type)10);
 
   vector<size_t> sizes;
   vector<size_t> idxs;
@@ -94,7 +92,6 @@ void test_suffixnodestoredisk(UnitTest &utf) {
     SuffixNode srand;
     int rsize = rand()%500;
     for(size_t n=0;n<rsize;n++) {
-      cout << "n: " << n << endl;
       srand.set_child(n,rand());
     }
     uint32_t idxr = store.push_back(srand);
