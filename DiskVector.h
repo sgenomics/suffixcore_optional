@@ -28,11 +28,11 @@ public:
   DiskVector() {}
 
   DiskVector(string filename) {
-    filehandle = fopen(filename.c_str(),"r");
+    filehandle = fopen(filename.c_str(),"a+");
+    cout << "filehandle: " << filehandle << endl;
   }
 
   data_type operator[](uint64_t index) {
-
     data_type data;
 
     fseek(filehandle,index*sizeof(data_type),SEEK_SET);
@@ -40,7 +40,12 @@ public:
     return data;
   }
 
-  void push_back(uint16_t i) {}
+  size_t push_back(data_type i) {
+    fseek(filehandle,0,SEEK_END);
+    size_t writepos = ftell(filehandle);
+    fwrite(&i,sizeof(data_type),1,filehandle);
+    return writepos/sizeof(data_type);
+  }
 
   size_t size() {
     fseek(filehandle,0,SEEK_END);
