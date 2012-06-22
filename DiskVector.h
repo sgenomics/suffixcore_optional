@@ -35,20 +35,20 @@ public:
   data_type operator[](uint64_t index) {
     data_type data;
 
-    fseek(filehandle,index*sizeof(data_type),SEEK_SET);
+    fseek(filehandle,((long)index)*sizeof(data_type),SEEK_SET);
     fread(&data,sizeof(data_type),1,filehandle);
     return data;
   }
 
   size_t push_back(data_type i) {
-    fseek(filehandle,0,SEEK_END);
+    fseek(filehandle,(long)0,SEEK_END);
     size_t writepos = ftell(filehandle);
     fwrite(&i,sizeof(data_type),1,filehandle);
     return writepos/sizeof(data_type);
   }
 
   size_t size() {
-    fseek(filehandle,0,SEEK_END);
+    fseek(filehandle,(long)0,SEEK_END);
     size_t filesize = ftell(filehandle);
     return filesize/sizeof(data_type);
   }

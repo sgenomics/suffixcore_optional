@@ -33,7 +33,7 @@ SuffixNodeStoreDisk::SuffixNodeStoreDisk(string filename) : basefilename(filenam
   index_filehandle = fopen((filename + "/index").c_str(),"a+");
 
   // open datafile, file handles
-  data_filehandle = vector<FILE *>(100000,(FILE *) 0);
+  data_filehandle = vector<FILE *>(1000000,(FILE *) 0);
 }
 
 FILE *SuffixNodeStoreDisk::get_data_filehandle(uint32_t i) {
@@ -74,7 +74,7 @@ uint64_t SuffixNodeStoreDisk::push_idx_entry(uint16_t filenum,uint32_t index) {
   *((uint32_t *) data)   = index;
   *((uint16_t *) (data+4)) = filenum;
  
-  fseek(index_filehandle,0,SEEK_END);
+  fseek(index_filehandle,(long)0,SEEK_END);
   fwrite(data,6,1,index_filehandle);
 
   return (ftell(index_filehandle)/6)-1;
@@ -84,7 +84,7 @@ uint64_t SuffixNodeStoreDisk::push_idx_entry(uint16_t filenum,uint32_t index) {
 void SuffixNodeStoreDisk::get_idx_entry(uint32_t idx,uint16_t &filenum,uint32_t &index) {
 
   char data[6];
-  fseek(index_filehandle,idx*6,SEEK_SET);
+  fseek(index_filehandle,((long)idx)*6,SEEK_SET);
   fread(data,6,1,index_filehandle);
 
   index   = *((uint32_t *) data);
@@ -107,18 +107,18 @@ void *SuffixNodeStoreDisk::read_data(uint16_t filenum,uint32_t index) {
 
   void *data = tialloc::instance()->alloc(filenum);
 
-  fseek(get_data_filehandle(filenum),index*filenum,SEEK_SET);
+  fseek(get_data_filehandle(filenum),((long)index)*filenum,SEEK_SET);
   fread(data,filenum,1,get_data_filehandle(filenum));
   return data;
 }
 
 void SuffixNodeStoreDisk::write_data(void *data,uint16_t filenum,uint32_t index) {
-  fseek(get_data_filehandle(filenum),index*filenum,SEEK_SET);
+  fseek(get_data_filehandle(filenum),((long)index)*filenum,SEEK_SET);
   fwrite(data,filenum,1,get_data_filehandle(filenum));
 }
 
 uint32_t SuffixNodeStoreDisk::push_data(uint16_t filenum, void *data) {
-  fseek(get_data_filehandle(filenum),0,SEEK_END);
+  fseek(get_data_filehandle(filenum),(long)0,SEEK_END);
   fwrite(data,filenum,1,get_data_filehandle(filenum));
 
   return (ftell(get_data_filehandle(filenum))-filenum)/filenum;
@@ -129,7 +129,7 @@ void SuffixNodeStoreDisk::set(uint32_t idx, SuffixNode &s) {
 }
 
 uint32_t SuffixNodeStoreDisk::size() {
-  fseek(index_filehandle,0,SEEK_END);
+  fseek(index_filehandle,(long)0,SEEK_END);
   size_t filesize = ftell(index_filehandle);
   return filesize/6;
 }
