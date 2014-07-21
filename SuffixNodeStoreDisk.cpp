@@ -82,14 +82,12 @@ size_t SuffixNodeStoreDisk::push_back(SuffixNode &s,int resize) {
 }
 
 void SuffixNodeStoreDisk::push_back_nort(SuffixNode &s) {
-
+  
   uint16_t filenum = s.get_data_alloc_size();
   uint32_t index   = push_data(filenum,s.get_data());
 
-  #pragma omp task 
-  {
-    push_idx_entry(filenum,index);
-  }
+#pragma omp task
+  push_idx_entry(filenum,index);
 }
 
 uint64_t SuffixNodeStoreDisk::push_idx_entry(uint16_t filenum,uint32_t index) {
@@ -162,7 +160,6 @@ void SuffixNodeStoreDisk::write_data(void *data,uint16_t filenum,uint32_t index)
 
 uint32_t SuffixNodeStoreDisk::push_data(uint16_t filenum, void *data) {
 
-  
   get_data_filehandle(filenum);
   omp_set_lock(&data_filehandle_lock[filenum]);
 
