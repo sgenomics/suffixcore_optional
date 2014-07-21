@@ -21,6 +21,7 @@
 #include <algorithm>
 #include "tialloc.h"
 #include <stdio.h>
+#include <omp.h>
 
 class SuffixNode;
 
@@ -32,11 +33,12 @@ class SuffixNodeStoreDisk {
 
 public:
   SuffixNodeStoreDisk() {}
-  SuffixNodeStoreDisk(string filename);
+  SuffixNodeStoreDisk(string filename,bool compress=false);
   void set_compactmode(bool compact_mode);
   size_t push_back_norm();
   size_t push_back_end();
   size_t push_back(SuffixNode &s,int resize=-1);
+  void push_back_nort(SuffixNode &s);
   SuffixNode get(uint32_t idx);
   void set(uint32_t idx, SuffixNode &s);
   uint32_t  size();
@@ -46,26 +48,32 @@ public:
   void force_compact();
   void compact();
 
-  FILE *get_data_filehandle(uint32_t i);
+  void *get_data_filehandle(uint32_t i);
 
 
   template<class copying_type>
   void copy(copying_type &other) {
+    #pragma omp parallel for
     for(uint32_t n=0;n<other.size();n++) {
-      push_back(other.get(n));
+      push_back_nort(other.get(n));
     }
   }
-
+  
   uint64_t push_idx_entry(uint16_t filenum,uint32_t index);
   void     get_idx_entry(uint32_t idx,uint16_t &filenum,uint32_t &index);
   void    *read_data(uint16_t filenum,uint32_t index);
   void     write_data(void *data,uint16_t filenum,uint32_t index);
   uint32_t push_data(uint16_t filenum, void *data);
+  void close();
 
-  vector<FILE *> data_filehandle;
-  FILE *index_filehandle;
+  vector<void *> data_filehandle;
+  vector<omp_lock_t> data_filehandle_lock;
+
+  void *index_filehandle;
+  omp_lock_t index_filehandle_lock;
 
   string basefilename;
+  bool m_compress;
 };
 
 
