@@ -58,6 +58,8 @@ public:
     for(uint32_t n=0;n<other.size();n++) {
       push_back_nort(other.get(n));
     }
+
+    close();
   }
   
   uint64_t push_idx_entry(uint16_t filenum,uint32_t index);

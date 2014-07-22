@@ -29,6 +29,8 @@ using namespace std;
 #include "SuffixNode.h"
 #include <stdint.h>
 
+const int gz_buffer_size=256;
+
 SuffixNodeStoreDisk::SuffixNodeStoreDisk(string filename,bool compress) : basefilename(filename) {
   omp_init_lock(&index_filehandle_lock);
  
@@ -44,7 +46,7 @@ SuffixNodeStoreDisk::SuffixNodeStoreDisk(string filename,bool compress) : basefi
     if(index_filehandle_gz == 0) {
       cout << "error filehandle not opened: " << errno << endl;
     }
-    gzbuffer(index_filehandle_gz,8*1024);
+    //gzbuffer(index_filehandle_gz,gz_buffer_size*1024);
     data_filehandle_gz = vector<gzFile>(20000);
   }
 
@@ -58,7 +60,7 @@ SuffixNodeStoreDisk::SuffixNodeStoreDisk(string filename,bool compress) : basefi
 gzFile SuffixNodeStoreDisk::get_data_filehandle_gz(uint32_t i) {
   if(data_filehandle_gz[i] == 0) {
     data_filehandle_gz[i] = gzopen((basefilename + "/" + stringify(i)).c_str(),"w");
-    gzbuffer(data_filehandle_gz[i],8*1024);
+    //gzbuffer(data_filehandle_gz[i],gz_buffer_size*1024);
   }
 
   return data_filehandle_gz[i];
@@ -168,7 +170,9 @@ void SuffixNodeStoreDisk::write_data(void *data,uint16_t filenum,uint32_t index)
     fseek(get_data_filehandle_uc(filenum),((long)index)*filenum,SEEK_SET);
     fwrite(data,filenum,1,get_data_filehandle_uc(filenum));
   } else {
+    omp_set_lock(&data_filehandle_lock[filenum]);
     gzwrite(get_data_filehandle_gz(filenum),data,filenum);
+    omp_unset_lock(&data_filehandle_lock[filenum]);
   }
 }
 
