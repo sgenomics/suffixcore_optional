@@ -54,7 +54,7 @@ public:
 
   template<class copying_type>
   void copy(copying_type &other) {
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for(uint32_t n=0;n<other.size();n++) {
       push_back_nort(other.get(n));
     }

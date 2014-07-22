@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <zlib.h>
-const int gz_buffer_size=256;
+#define gz_buffer_size 256
 
 using namespace std;
 
@@ -35,7 +35,7 @@ public:
     if(!m_compress) {
       filehandle_uc = fopen(filename.c_str(),"a+");
     } else {
-      filehandle_gz = gzopen(filename.c_str(),"wh");
+      filehandle_gz = gzopen((filename + ".gz" ).c_str(),"wh");
       gzbuffer(filehandle_gz,gz_buffer_size*1024);
     }
     cout << "filehandle uc: " << filehandle_uc << endl;
@@ -56,12 +56,12 @@ public:
 
     size_t writepos;
     if(!m_compress) {
-      fseek((FILE *) filehandle_uc,(long)0,SEEK_END);
-      writepos = ftell((FILE *) filehandle_uc);
-      fwrite(&i,sizeof(data_type),1,(FILE *) filehandle_uc);
+      fseek(filehandle_uc,(long)0,SEEK_END);
+      writepos = ftell(filehandle_uc);
+      fwrite(&i,sizeof(data_type),1,filehandle_uc);
     } else {
-      writepos = gztell((gzFile) filehandle_gz);
-      gzwrite((gzFile)filehandle_gz,&i,sizeof(data_type));
+      writepos = gztell(filehandle_gz);
+      gzwrite(filehandle_gz,&i,sizeof(data_type));
     }
     return writepos/sizeof(data_type);
   }
@@ -70,7 +70,7 @@ public:
     size_t filesize;
 
     if(!m_compress) {
-      fseek((FILE *) filehandle_uc,(long)0,SEEK_END);
+      fseek(filehandle_uc,(long)0,SEEK_END);
       filesize = ftell((FILE *) filehandle_uc);
     } else {
       filesize = gztell(filehandle_gz);
@@ -78,7 +78,16 @@ public:
     return filesize/sizeof(data_type);
   }
 
-  void *filehandle_uc;
+  void close() {
+    if(filehandle_uc != 0) fclose(filehandle_uc);
+
+    if(filehandle_gz != 0) {
+      gzflush(filehandle_gz,Z_FINISH);
+      gzclose(filehandle_gz);
+    }
+  }
+
+  FILE *filehandle_uc;
   gzFile filehandle_gz;
   bool m_compress;
 };
