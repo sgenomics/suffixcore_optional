@@ -57,8 +57,8 @@ public:
       writepos = ftell((FILE *) filehandle);
       fwrite(&i,sizeof(data_type),1,(FILE *) filehandle);
     } else {
-      writepos = gztell(filehandle);
-      gzwrite(filehandle,&i,sizeof(data_type));
+      writepos = gztell((gzFile) filehandle);
+      gzwrite((gzFile)filehandle,&i,sizeof(data_type));
     }
     return writepos/sizeof(data_type);
   }

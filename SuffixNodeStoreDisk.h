@@ -22,6 +22,7 @@
 #include "tialloc.h"
 #include <stdio.h>
 #include <omp.h>
+#include <zlib.h>
 
 class SuffixNode;
 
@@ -48,8 +49,8 @@ public:
   void force_compact();
   void compact();
 
-  void *get_data_filehandle(uint32_t i);
-
+  FILE  *get_data_filehandle_uc(uint32_t i);
+  gzFile get_data_filehandle_gz(uint32_t i);
 
   template<class copying_type>
   void copy(copying_type &other) {
@@ -66,10 +67,12 @@ public:
   uint32_t push_data(uint16_t filenum, void *data);
   void close();
 
-  vector<void *> data_filehandle;
+  vector<gzFile> data_filehandle_gz;
+  vector<FILE *> data_filehandle_uc;
   vector<omp_lock_t> data_filehandle_lock;
 
-  void *index_filehandle;
+  gzFile index_filehandle_gz;
+  FILE *index_filehandle_uc;
   omp_lock_t index_filehandle_lock;
 
   string basefilename;

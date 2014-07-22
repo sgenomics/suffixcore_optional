@@ -22,6 +22,7 @@
 #include "SuffixNodeStoreDisk.h"
 #include "SuffixNode.h"
 #include "stringify.h"
+#include <errno.h>
 
 using namespace std;
 
@@ -33,29 +34,39 @@ SuffixNodeStoreDisk::SuffixNodeStoreDisk(string filename,bool compress) : basefi
  
   m_compress = compress;
   // open index file handle
-  if(!compress) {
-    index_filehandle = fopen((filename + "/index").c_str(),"a+");
+  if(!m_compress) {
+    index_filehandle_uc = fopen((filename + "/index").c_str(),"a+");
+    data_filehandle_uc = vector<FILE *>(20000,(FILE *) 0);
   } else {
-    index_filehandle = gzopen((filename + "/index").c_str(),"a+");
+    cout << "filename: " << filename + "/index" << endl;
+    index_filehandle_gz = gzopen((filename + "/index").c_str(),"w");
+    cout << "index filehandle: " << index_filehandle_gz << endl;
+    if(index_filehandle_gz == 0) {
+      cout << "error filehandle not opened: " << errno << endl;
+    }
+    gzbuffer(index_filehandle_gz,8*1024);
+    data_filehandle_gz = vector<gzFile>(20000);
   }
 
   // open datafile, file handles
-  data_filehandle = vector<void *>(20000,(void *) 0);
   data_filehandle_lock = vector<omp_lock_t>(20000);
+  for(size_t n=0;n<data_filehandle_lock.size();n++) {
+    omp_init_lock(&data_filehandle_lock[n]);
+  }
 }
 
-void *SuffixNodeStoreDisk::get_data_filehandle(uint32_t i) {
-  if(data_filehandle[i] == 0) {
-     if(!m_compress) {
-      data_filehandle[i] = fopen((basefilename + "/" + stringify(i)).c_str(),"a+");
-    } else {
-      data_filehandle[i] = gzopen((basefilename + "/" + stringify(i)).c_str(),"a+");
-    }
-    omp_init_lock(&data_filehandle_lock[i]);
-    return data_filehandle[i];
-  } else {
-    return data_filehandle[i];
+gzFile SuffixNodeStoreDisk::get_data_filehandle_gz(uint32_t i) {
+  if(data_filehandle_gz[i] == 0) {
+    data_filehandle_gz[i] = gzopen((basefilename + "/" + stringify(i)).c_str(),"w");
+    gzbuffer(data_filehandle_gz[i],8*1024);
   }
+
+  return data_filehandle_gz[i];
+}
+
+FILE *SuffixNodeStoreDisk::get_data_filehandle_uc(uint32_t i) {
+  data_filehandle_uc[i] = fopen((basefilename + "/" + stringify(i)).c_str(),"a+");
+  return data_filehandle_uc[i];
 }
 
 void SuffixNodeStoreDisk::set_compactmode(bool compact_mode) {
@@ -100,15 +111,18 @@ uint64_t SuffixNodeStoreDisk::push_idx_entry(uint16_t filenum,uint32_t index) {
  
   if(!m_compress) {
     // If writing in sequence (repeated calls to this function) this appears to be a NOP. 
-    fseek((FILE *) index_filehandle,(long)0,SEEK_END);
-    fwrite(data,6,1,(FILE *) index_filehandle);
+    fseek((FILE *) index_filehandle_uc,(long)0,SEEK_END);
+    fwrite(data,6,1,(FILE *) index_filehandle_uc);
+    size_t i = (ftell(index_filehandle_uc)/6)-1;
+    omp_unset_lock(&index_filehandle_lock);
+    return i;
   } else {
-    gzwrite(index_filehandle,data,6);
+    gzwrite(index_filehandle_gz,data,6);
+    size_t i = (gztell(index_filehandle_gz)/6)-1;
+    omp_unset_lock(&index_filehandle_lock);
+    return i;
   }
-  size_t i = (gztell(index_filehandle)/6)-1;
-  omp_unset_lock(&index_filehandle_lock);
 
-  return i;
 }
 
 
@@ -116,10 +130,10 @@ void SuffixNodeStoreDisk::get_idx_entry(uint32_t idx,uint16_t &filenum,uint32_t 
 
   char data[6];
   if(!m_compress) {
-    fseek((FILE *) index_filehandle,((long)idx)*6,SEEK_SET);
-    fread(data,6,1,(FILE *) index_filehandle);
+    fseek(index_filehandle_uc,((long)idx)*6,SEEK_SET);
+    fread(data,6,1,index_filehandle_uc);
   } else {
-    gzread(index_filehandle,data,6);
+    gzread(index_filehandle_gz,data,6);
   }
 
   index   = *((uint32_t *) data);
@@ -143,37 +157,37 @@ void *SuffixNodeStoreDisk::read_data(uint16_t filenum,uint32_t index) {
   void *data = tialloc::instance()->alloc(filenum);
 
   if(!m_compress) {
-    fseek((FILE *) get_data_filehandle(filenum),((long)index)*filenum,SEEK_SET);
-    fread(data,filenum,1,(FILE *) get_data_filehandle(filenum));
+    fseek(get_data_filehandle_uc(filenum),((long)index)*filenum,SEEK_SET);
+    fread(data,filenum,1,get_data_filehandle_uc(filenum));
   }
   return data;
 }
 
 void SuffixNodeStoreDisk::write_data(void *data,uint16_t filenum,uint32_t index) {
   if(!m_compress) {
-    fseek((FILE *) get_data_filehandle(filenum),((long)index)*filenum,SEEK_SET);
-    fwrite(data,filenum,1,(FILE *) get_data_filehandle(filenum));
+    fseek(get_data_filehandle_uc(filenum),((long)index)*filenum,SEEK_SET);
+    fwrite(data,filenum,1,get_data_filehandle_uc(filenum));
   } else {
-    gzwrite(get_data_filehandle(filenum),data,filenum);
+    gzwrite(get_data_filehandle_gz(filenum),data,filenum);
   }
 }
 
 uint32_t SuffixNodeStoreDisk::push_data(uint16_t filenum, void *data) {
 
-  get_data_filehandle(filenum);
-  omp_set_lock(&data_filehandle_lock[filenum]);
-
   if(!m_compress) {
-    fseek((FILE *) get_data_filehandle(filenum),(long)0,SEEK_END);
-    fwrite(data,filenum,1,(FILE *) get_data_filehandle(filenum));
+    omp_set_lock(&data_filehandle_lock[filenum]);
+    fseek((FILE *) get_data_filehandle_uc(filenum),(long)0,SEEK_END);
+    fwrite(data,filenum,1,(FILE *) get_data_filehandle_uc(filenum));
+    uint32_t i = (ftell(get_data_filehandle_uc(filenum))-filenum)/filenum;
+    omp_unset_lock(&data_filehandle_lock[filenum]);
+    return i;
   } else {
-    gzwrite(get_data_filehandle(filenum),data,filenum);
+    omp_set_lock(&data_filehandle_lock[filenum]);
+    gzwrite(get_data_filehandle_gz(filenum),data,filenum);
+    uint32_t i = (gztell(get_data_filehandle_gz(filenum))-filenum)/filenum;
+    omp_unset_lock(&data_filehandle_lock[filenum]);
+    return i;
   }
-  size_t i = (gztell(get_data_filehandle(filenum))-filenum)/filenum;
-
-  omp_unset_lock(&data_filehandle_lock[filenum]);
-
-  return i;
 }
 
 void SuffixNodeStoreDisk::set(uint32_t idx, SuffixNode &s) {
@@ -182,9 +196,15 @@ void SuffixNodeStoreDisk::set(uint32_t idx, SuffixNode &s) {
 
 uint32_t SuffixNodeStoreDisk::size() {
   if(!m_compress) {
-    fseek((FILE *) index_filehandle,(long)0,SEEK_END);
+    fseek((FILE *) index_filehandle_uc,(long)0,SEEK_END);
   }
-  size_t filesize = gztell(index_filehandle);
+  
+  size_t filesize;
+  if(!m_compress) {
+    filesize = ftell(index_filehandle_uc);
+  } else {
+    filesize = gztell(index_filehandle_gz);
+  }
   return filesize/6;
 }
 
@@ -206,9 +226,23 @@ void SuffixNodeStoreDisk::compact() {
 }
 
 void SuffixNodeStoreDisk::close() {
-  gzclose(index_filehandle);
+  if(!m_compress) {
+    fclose(index_filehandle_uc);
+  } else {
+    gzflush(index_filehandle_gz,Z_FINISH);
+    gzclose(index_filehandle_gz);
+  }
 
-  for(size_t n=0;n<data_filehandle.size();n++) {
-    if(data_filehandle[n] != 0) gzclose(data_filehandle[n]);
+  for(size_t n=0;n<data_filehandle_uc.size();n++) {
+    if(data_filehandle_uc[n] != 0) {
+      fclose(data_filehandle_uc[n]);
+    }
+  }
+
+  for(size_t n=0;n<data_filehandle_gz.size();n++) {
+    if(data_filehandle_gz[n] != 0) {
+      gzflush(data_filehandle_gz[n],Z_FINISH);
+      gzclose(data_filehandle_gz[n]);
+    }
   }
 }
