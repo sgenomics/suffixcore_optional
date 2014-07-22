@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <zlib.h>
+const int gz_buffer_size=256;
 
 using namespace std;
 
@@ -32,19 +33,21 @@ public:
     m_compress = compress;
 
     if(!m_compress) {
-      filehandle = fopen(filename.c_str(),"a+");
+      filehandle_uc = fopen(filename.c_str(),"a+");
     } else {
-      filehandle = gzopen(filename.c_str(),"a+");
+      filehandle_gz = gzopen(filename.c_str(),"wh");
+      gzbuffer(filehandle_gz,gz_buffer_size*1024);
     }
-    cout << "filehandle: " << filehandle << endl;
+    cout << "filehandle uc: " << filehandle_uc << endl;
+    cout << "filehandle gz: " << filehandle_gz << endl;
   }
 
   data_type operator[](uint64_t index) {
     data_type data;
 
     if(!m_compress) {
-      fseek((FILE *) filehandle,((long)index)*sizeof(data_type),SEEK_SET);
-      fread(&data,sizeof(data_type),1,(FILE *) filehandle);
+      fseek((FILE *) filehandle_uc,((long)index)*sizeof(data_type),SEEK_SET);
+      fread(&data,sizeof(data_type),1,(FILE *) filehandle_uc);
     }
     return data;
   }
@@ -53,12 +56,12 @@ public:
 
     size_t writepos;
     if(!m_compress) {
-      fseek((FILE *) filehandle,(long)0,SEEK_END);
-      writepos = ftell((FILE *) filehandle);
-      fwrite(&i,sizeof(data_type),1,(FILE *) filehandle);
+      fseek((FILE *) filehandle_uc,(long)0,SEEK_END);
+      writepos = ftell((FILE *) filehandle_uc);
+      fwrite(&i,sizeof(data_type),1,(FILE *) filehandle_uc);
     } else {
-      writepos = gztell((gzFile) filehandle);
-      gzwrite((gzFile)filehandle,&i,sizeof(data_type));
+      writepos = gztell((gzFile) filehandle_gz);
+      gzwrite((gzFile)filehandle_gz,&i,sizeof(data_type));
     }
     return writepos/sizeof(data_type);
   }
@@ -67,15 +70,16 @@ public:
     size_t filesize;
 
     if(!m_compress) {
-      fseek((FILE *) filehandle,(long)0,SEEK_END);
-      filesize = ftell((FILE *) filehandle);
+      fseek((FILE *) filehandle_uc,(long)0,SEEK_END);
+      filesize = ftell((FILE *) filehandle_uc);
     } else {
-      filesize = gztell(filehandle);
+      filesize = gztell(filehandle_gz);
     }
     return filesize/sizeof(data_type);
   }
 
-  void *filehandle;
+  void *filehandle_uc;
+  gzFile filehandle_gz;
   bool m_compress;
 };
 

@@ -41,12 +41,12 @@ SuffixNodeStoreDisk::SuffixNodeStoreDisk(string filename,bool compress) : basefi
     data_filehandle_uc = vector<FILE *>(20000,(FILE *) 0);
   } else {
     cout << "filename: " << filename + "/index" << endl;
-    index_filehandle_gz = gzopen((filename + "/index").c_str(),"w");
+    index_filehandle_gz = gzopen((filename + "/index").c_str(),"wh");
     cout << "index filehandle: " << index_filehandle_gz << endl;
     if(index_filehandle_gz == 0) {
       cout << "error filehandle not opened: " << errno << endl;
     }
-    //gzbuffer(index_filehandle_gz,gz_buffer_size*1024);
+    gzbuffer(index_filehandle_gz,gz_buffer_size*1024);
     data_filehandle_gz = vector<gzFile>(20000);
   }
 
@@ -59,8 +59,8 @@ SuffixNodeStoreDisk::SuffixNodeStoreDisk(string filename,bool compress) : basefi
 
 gzFile SuffixNodeStoreDisk::get_data_filehandle_gz(uint32_t i) {
   if(data_filehandle_gz[i] == 0) {
-    data_filehandle_gz[i] = gzopen((basefilename + "/" + stringify(i)).c_str(),"w");
-    //gzbuffer(data_filehandle_gz[i],gz_buffer_size*1024);
+    data_filehandle_gz[i] = gzopen((basefilename + "/" + stringify(i)).c_str(),"wh");
+    gzbuffer(data_filehandle_gz[i],gz_buffer_size*1024);
   }
 
   return data_filehandle_gz[i];
