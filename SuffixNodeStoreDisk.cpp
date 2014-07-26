@@ -33,7 +33,7 @@ using namespace std;
 #define gz_buffer_size 256
 
 SuffixNodeStoreDisk::SuffixNodeStoreDisk(string filename,bool compress) : basefilename(filename) {
-  omp_init_lock(&index_filehandle_lock);
+  //omp_init_lock(&index_filehandle_lock);
  
   m_compress = compress;
   // open index file handle
@@ -48,13 +48,13 @@ SuffixNodeStoreDisk::SuffixNodeStoreDisk(string filename,bool compress) : basefi
       cout << "error filehandle not opened: " << errno << endl;
     }
     gzbuffer(index_filehandle_gz,gz_buffer_size*1024);
-    data_filehandle_gz = vector<gzFile>(20000);
+    data_filehandle_gz = vector<gzFile>(200000);
   }
 
   // open datafile, file handles
-  data_filehandle_lock = vector<omp_lock_t>(20000);
+  //data_filehandle_lock = vector<omp_lock_t>(20000);
   for(size_t n=0;n<data_filehandle_lock.size();n++) {
-    omp_init_lock(&data_filehandle_lock[n]);
+    //omp_init_lock(&data_filehandle_lock[n]);
   }
 }
 
@@ -106,7 +106,7 @@ void SuffixNodeStoreDisk::push_back_nort(SuffixNode &s) {
 
 uint64_t SuffixNodeStoreDisk::push_idx_entry(uint16_t filenum,uint32_t index) {
 
-  omp_set_lock(&index_filehandle_lock);
+  //omp_set_lock(&index_filehandle_lock);
 
   uint8_t data[6];
   *((uint32_t *) data)   = index;
@@ -117,12 +117,12 @@ uint64_t SuffixNodeStoreDisk::push_idx_entry(uint16_t filenum,uint32_t index) {
     fseek((FILE *) index_filehandle_uc,(long)0,SEEK_END);
     fwrite(data,6,1,(FILE *) index_filehandle_uc);
     size_t i = (ftell(index_filehandle_uc)/6)-1;
-    omp_unset_lock(&index_filehandle_lock);
+    //omp_unset_lock(&index_filehandle_lock);
     return i;
   } else {
     gzwrite(index_filehandle_gz,data,6);
     size_t i = (gztell(index_filehandle_gz)/6)-1;
-    omp_unset_lock(&index_filehandle_lock);
+    //omp_unset_lock(&index_filehandle_lock);
     return i;
   }
 
@@ -171,26 +171,26 @@ void SuffixNodeStoreDisk::write_data(void *data,uint16_t filenum,uint32_t index)
     fseek(get_data_filehandle_uc(filenum),((long)index)*filenum,SEEK_SET);
     fwrite(data,filenum,1,get_data_filehandle_uc(filenum));
   } else {
-    omp_set_lock(&data_filehandle_lock[filenum]);
+    //omp_set_lock(&data_filehandle_lock[filenum]);
     gzwrite(get_data_filehandle_gz(filenum),data,filenum);
-    omp_unset_lock(&data_filehandle_lock[filenum]);
+    //omp_unset_lock(&data_filehandle_lock[filenum]);
   }
 }
 
 uint32_t SuffixNodeStoreDisk::push_data(uint16_t filenum, void *data) {
 
   if(!m_compress) {
-    omp_set_lock(&data_filehandle_lock[filenum]);
+    //omp_set_lock(&data_filehandle_lock[filenum]);
     fseek(get_data_filehandle_uc(filenum),(long)0,SEEK_END);
     fwrite(data,filenum,1,get_data_filehandle_uc(filenum));
     uint32_t i = (ftell(get_data_filehandle_uc(filenum))-filenum)/filenum;
-    omp_unset_lock(&data_filehandle_lock[filenum]);
+    //omp_unset_lock(&data_filehandle_lock[filenum]);
     return i;
   } else {
-    omp_set_lock(&data_filehandle_lock[filenum]);
+    //omp_set_lock(&data_filehandle_lock[filenum]);
     gzwrite(get_data_filehandle_gz(filenum),data,filenum);
     uint32_t i = (gztell(get_data_filehandle_gz(filenum))-filenum)/filenum;
-    omp_unset_lock(&data_filehandle_lock[filenum]);
+    //omp_unset_lock(&data_filehandle_lock[filenum]);
     return i;
   }
 }
