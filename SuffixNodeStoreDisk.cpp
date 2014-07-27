@@ -39,7 +39,7 @@ SuffixNodeStoreDisk::SuffixNodeStoreDisk(string filename,bool compress) : basefi
   // open index file handle
   if(!m_compress) {
     index_filehandle_uc = fopen((filename + "/index").c_str(),"a+");
-    data_filehandle_uc = vector<FILE *>(20000,(FILE *) 0);
+    data_filehandle_uc = vector<FILE *>(200000,(FILE *) 0);
   } else {
     cout << "filename: " << filename + "/index" << endl;
     index_filehandle_gz = gzopen((filename + "/index.gz").c_str(),"wh");
